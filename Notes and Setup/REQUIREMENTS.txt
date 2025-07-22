@@ -1,0 +1,31 @@
+FEATURES COMPLETED:
+
+Feature	Status
+ User Login	            ✅ Done (you already have login + session check)
+ Add Transaction	    ✅ Done (add_transaction.php)
+ View Transactions	    ✅ Done (Below the form or in dashboard.php)
+ Set/Update Allowance	✅ Done (set_allowance.php)
+
+ ----------------------
+
+IN PROGRESS / TO BE REFINED:
+
+Feature	Needed
+
+ Validation / Feedback UI	Improve success/error messages. Maybe use Bootstrap?(I dunno) or minimal CSS
+ Cleaner layout	
+
+----------------------
+
+STILL TO DO (Some optional Some not)
+
+Feature	Description
+Monthly Filtering	        View transactions by month (e.g., dropdown filter on dashboard)
+Delete/Edit Transaction 	Add buttons to delete or edit existing records
+Export	                    Add option to download transactions as .csv or .pdf
+Reset Monthly Allowance	    Automatically reset or alert when a new month starts (if part of your design)
+Profile Page	            Let user edit name, password, or email (if stored)
+Logout Function	            Logout.php to end the session
+Final Testing	            Check edge cases: large numbers, negative values, blank fields, SQL injection
+Documentation	            For the final presentation: screenshots, description, flow of app, what features are working
+Demo Video	                Record a 2 video showing login, adding transaction, setting allowance, and balance updating

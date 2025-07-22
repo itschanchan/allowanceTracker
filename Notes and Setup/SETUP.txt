@@ -1,0 +1,49 @@
+ SETUP INSTRUCTIONS:
+----------------------
+
+1. EXTRACT & PLACE PROJECT:
+   - Unzip the project folder.
+   - Place it inside your web server's root directory:
+     - For XAMPP: C:\xampp\htdocs\allowanceTracker
+
+2. IMPORT THE DATABASE:
+   - Open your browser and go to: http://localhost/phpmyadmin
+   - Create a new database (e.g., `student_allowance_tracker`)
+   - Click Import, select the `database.sql` file provided, and import it.
+
+3. CONFIGURE DATABASE CONNECTION:
+   - Open the file: `connect.php`
+   - Update the following with your local settings:
+     
+     $servername = "localhost";
+     $username = "root";
+     $password = "";
+     $dbname = "student_allowance_tracker";
+     $port = "3306"
+     
+
+4. START THE SERVER:
+   - Launch XAMPP or your web server.
+   - Start Apache and MySQL.
+
+5. OPEN THE APP:
+   - Visit the app in your browser:  
+     http://localhost/allowanceTracker/
+
+6. LOGIN / REGISTER:
+   - You can register a new account and begin using the system.
+   - Each user can set their allowance, add transactions, and view expenses.
+
+✅ FEATURES:
+------------
+- User Registration & Login
+- Set Allowance (Daily(in Progess), Weekly(In progress), Monthly)
+- Add Expenses / Transactions
+- Track Remaining Balance
+- Basic Dashboard
+
+⚠️ NOTES:
+----------
+- Make sure MySQL and Apache are running.
+- Admin page not included by default.
+
