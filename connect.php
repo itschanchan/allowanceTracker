@@ -3,7 +3,7 @@
  $servername = "localhost";
  $username = "root";
  $password = "";
- $db = "student_allowance_tracker";
+ $db = "student_allowance_db";
  $port = "3306";
 
  // Create connection MySQLi

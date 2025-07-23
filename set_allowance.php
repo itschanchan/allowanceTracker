@@ -37,18 +37,46 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 ?>
 <!DOCTYPE html>
-<html>
-<head><title>Set Allowance</title></head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Set Allowance</title>
+    <link rel="stylesheet" href="design.css">
+    <script src="javascript.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
 <body>
-    <h2>Set / Update Allowance</h2>
-    <?php
-        if ($error) echo "<p style='color:red;'>$error</p>";
-        if ($success) echo "<p style='color:green;'>$success</p>";
-    ?>
-    <form method="POST">
-        Allowance Amount (₱): <input type="number" name="amount" step="0.01" min="0" required><br><br>
-        <input type="submit" value="Save">
-    </form>
-    <p><a href="dashboard.php">Back to Dashboard</a></p>
+    <div class="mainContainer">
+        <div class="title">
+            <h1>STUDENT ALLOWANCE TRACKER</h1>
+        </div>
+
+        <div class="container">
+            <form method="POST" class="form">
+                <h1>Set / Update Allowance</h1>
+
+                <div class="inputBx">
+                    <span>Allowance Amount (₱):</span>
+                    <ion-icon name="wallet-outline"></ion-icon>
+                    <input type="number" name="amount" step="0.01" min="0" placeholder="Enter amount" required>
+                </div>
+
+                <div class="inputBx">
+                    <input type="submit" value="Save">
+                </div>
+
+                <?php if ($error): ?>
+                    <p class="error"><?php echo $error; ?></p>
+                <?php endif; ?>
+
+                <?php if ($success): ?>
+                    <p class="success"><?php echo $success; ?></p>
+                <?php endif; ?>
+
+                <p class="registerText"><a href="dashboard.php">← Back to Dashboard</a></p>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
