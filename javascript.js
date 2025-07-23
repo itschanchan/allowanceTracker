@@ -70,35 +70,52 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Actions Column
 function editRow(id) {
-    const row = document.getElementById(`row-${id}`);
-    const date = row.querySelector('.date').innerText;
-    const desc = row.querySelector('.desc').innerText;
-    const amount = row.querySelector('.amount').innerText.replace('₱', '').trim();
+    const row = document.getElementById('row-' + id);
+    const date = row.querySelector('.date');
+    const desc = row.querySelector('.desc');
+    const amount = row.querySelector('.amount');
+    const editBtn = row.querySelector('.edit');
+    const saveBtn = row.querySelector('.save');
 
-    row.querySelector('.date').innerHTML = `<input type="date" name="edit_date" value="${date}">`;
-    row.querySelector('.desc').innerHTML = `<input type="text" name="edit_desc" value="${desc}">`;
-    row.querySelector('.amount').innerHTML = `<input type="number" name="edit_amount" step="0.01" value="${amount}">`;
-    row.querySelector('.edit').style.display = 'none';
-    row.querySelector('.save').style.display = 'inline-block';
+    // Replace text with input fields
+    date.innerHTML = `<input type="date" value="${date.innerText}" />`;
+    desc.innerHTML = `<input type="text" value="${desc.innerText}" />`;
+    amount.innerHTML = `<input type="number" step="0.01" value="${parseFloat(amount.innerText.replace(/₱|,/g, ''))}" />`;
+
+    editBtn.style.display = "none";
+    saveBtn.style.display = "inline-block";
 }
 
 function saveRow(id) {
-    const row = document.getElementById(`row-${id}`);
-    const date = row.querySelector('input[name="edit_date"]').value;
-    const desc = row.querySelector('input[name="edit_desc"]').value;
-    const amount = row.querySelector('input[name="edit_amount"]').value;
+    const row = document.getElementById('row-' + id);
+    const date = row.querySelector('.date input').value;
+    const desc = row.querySelector('.desc input').value;
+    const amount = row.querySelector('.amount input').value;
+    const editBtn = row.querySelector('.edit');
+    const saveBtn = row.querySelector('.save');
 
-    fetch('updateTransaction.php', {
+    // Send data to update.php using AJAX
+    fetch('update.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
         body: `id=${id}&date=${encodeURIComponent(date)}&description=${encodeURIComponent(desc)}&amount=${amount}`
     })
     .then(response => response.text())
-    .then(result => {
-        location.reload();
+    .then(data => {
+        if (data.trim() === "success") {
+            // Reload the page to reflect updated totals
+            window.location.reload();
+        } else {
+            alert("Update failed: " + data);
+        }
     })
     .catch(error => {
-        alert("Failed to update transaction.");
-        console.error(error);
+        alert("Error: " + error);
     });
+
+    editBtn.style.display = "inline-block";
+    saveBtn.style.display = "none";
 }
+

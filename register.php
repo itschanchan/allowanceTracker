@@ -22,17 +22,24 @@
 
             if ($stmt->num_rows > 0) {
                 $error = "Email is already registered.";
-            } 
-            else {
+            } else {
                 $stmt->close();
 
                 $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
                 $stmt->bind_param("sss", $name, $email, $password);
 
                 if ($stmt->execute()) {
-                    $success = "Registration successful. <a href='login.php'>Log in here</a>.";
-                } 
-                else {
+                // Get the inserted user ID
+                $user_id = $stmt->insert_id;
+
+                // Set session values
+                $_SESSION['user_id'] = $user_id;
+                $_SESSION['name'] = $name;
+
+                // Redirect to dashboard
+                header("Location: dashboard.php");
+                exit();
+            } else {
                     $error = "Registration failed: " . $stmt->error;
                 }
             }

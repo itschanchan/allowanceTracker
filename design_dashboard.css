@@ -14,15 +14,18 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    margin: 0;
-    padding: 0;
+}
+
+/* PAGE WRAPPER */
+.pageWrapper {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
 }
 
 /* NAVIGATION BAR */
 nav.navbar {
     width: 100%;
-    max-width: 1500px;
-    margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -67,7 +70,6 @@ nav.navbar {
     background-color: #c0392b;
 }
 
-
 /* TABLE STYLING */
 table {
     width: 100%;
@@ -102,21 +104,17 @@ th {
     justify-content: center;
     align-items: center;
     width: 100%;
-    max-width: 1500px;
-    margin: auto;
-    padding: 0;
 }
 
 .container {
     position: relative;
-    width: 1500px;
-    max-width: 95%;
+    width: 100%;
+    max-width: 100%;
     background: #ffffff;
     backdrop-filter: blur(5px);
     border-radius: 0 0 20px 20px;
     box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
-    padding: 40px 30px; 
-    margin-top: -20px;
+    padding: 40px 30px;
 }
 
 .container::after {
@@ -134,11 +132,35 @@ th {
 
 .sideBySideWrapper {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
     align-items: flex-start;
-    gap: 30px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.leftWrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 20px;
+}
+
+.tabWrapper {
+    flex: 1;
+    min-width: 300px;
+}
+
+.leftWrapper .box,
+.tabWrapper.box {
     width: 100%;
+}
+
+.budgetBox input[type=range] {
+    width: 100%;
+    margin-top: 8px;
+}
+
+#budgetDisplay {
+    font-weight: bold;
 }
 
 /* STATS */
@@ -159,12 +181,14 @@ th {
 
 .dashboardBox {
     flex: 2;
-    min-width: 500px;
+    min-width: 0;
+    width: 100%;
 }
 
 .allowanceBox {
     flex: 1;
-    min-width: 280px;
+    min-width: 0;
+    width: 100%;
 }
 
 .dashboardContainer {
@@ -179,9 +203,10 @@ th {
     margin-bottom: 20px;
 }
 
-.form h1 {
+.form h1,
+form h2 {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
     font-size: 24px;
     letter-spacing: 1px;
 }
@@ -214,10 +239,11 @@ th {
     position: relative;
 }
 
-.inputBx span {
-    margin-bottom: 5px;
+.inputBx label {
+    margin-bottom: 10px;
     font-weight: 500;
     font-size: 14px;
+    display: inline-block;
 }
 
 .inputBx input[type="text"],
@@ -235,15 +261,17 @@ th {
 }
 
 .inputBx input[type="submit"] {
+    width: auto;
+    padding: 8px 25px;
+    font-size: 14px;
     background: #333;
     color: #fff;
     border: none;
-    padding: 10px 20px;
     border-radius: 22px;
     font-weight: bold;
     cursor: pointer;
     transition: background 0.3s ease;
-    margin-top: 10px;
+    align-self: center;
 }
 
 .inputBx input[type="submit"]:hover {
@@ -293,42 +321,118 @@ th {
     background-color: #d32f2f;
 }
 
-/* TABS (SET ALLOWANCE & ADD TRANSACTION */
+/* BUDGET */
+.budgetBox {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    margin-top: 30px;
+}
+.budgetBox h2 {
+    margin-bottom: 15px;
+}
+.budgetBox .stats p {
+    font-size: 15px;
+    margin: 8px 0;
+}
+
+/* TABS (SET ALLOWANCE & ADD TRANSACTION) */
+.tabWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 20px;
+}
+
 .tabsContainer ul {
     display: flex;
     list-style: none;
     padding: 0;
-    margin-bottom: 10px;
+    margin: 0;
     gap: 10px;
 }
 
 .tabsContainer ul li a {
     text-decoration: none;
     padding: 8px 16px;
-    background: #ccc;
+    background-color: #ccc;
     color: #000;
     border-radius: 5px;
-    transition: background 0.3s;
+    transition: background 0.3s ease;
 }
 
 .tabsContainer ul li a.active {
-    background: #007BFF;
-    color: white;
+    background-color: #007BFF;
+    color: #fff;
 }
 
 .tab-content {
     display: none;
+    flex-direction: column;
+    gap: 40px;
 }
 
 .tab-content.active {
-    display: block;
+    display: flex;
 }
 
 /* ICONS */
 ion-icon {
     width: 24px;
     position: absolute;
-    top: 30px;
+    top: 38px;
     left: 9px;
     opacity: 0.6;
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+    .sideBySideWrapper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+    }
+
+    .dashboardBox,
+    .allowanceBox {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .tabWrapper {
+        padding: 10px;
+        gap: 20px;
+    }
+
+    .tabsContainer ul {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .tabsContainer ul li {
+        width: 100%;
+    }
+
+    .tabsContainer ul li a {
+        display: block;
+        width: 100%;
+        text-align: center;
+        font-size: clamp(13px, 4vw, 16px);
+        padding: 10px 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .form h1,
+    form h2 {
+        font-size: clamp(18px, 5vw, 22px);
+        text-align: center;
+    }
+
+    .pageWrapper {
+        padding: 0 15px;
+    }
 }
