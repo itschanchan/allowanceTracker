@@ -9,14 +9,10 @@
         if (mysqli_query($conn, $sql)) {
             header("Location: dashboard.php?msg=deleted");
             exit();
-        } 
-        
-        else {
+        } else {
             echo "Error deleting record: " . mysqli_error($conn);
         }
-    } 
-
-    else {
+    } else {
         echo "Invalid request";
     }
 ?>

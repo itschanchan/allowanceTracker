@@ -1,20 +1,31 @@
 <?php
     session_start();
-    include_once("connect.php"); 
+    include_once("connect.php");
 
-    $error = "";
-    $success = "";
+
+    // Initialize variables
+    $name = '';
+    $email = '';
+    $password = '';
+    $re_password = '';
+    $error = '';
+    $success = '';
+
 
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $name = trim($_POST['name'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $password = trim($_POST['password'] ?? '');
+        $re_password = trim($_POST['re_password'] ?? '');
 
-        // Basic validation
-        if ($name === '' || $email === '' || $password === '') {
+        if ($name === '' || $email === '' || $password === '' || $re_password === '') {
             $error = "All fields are required.";
-        } 
-        else {
+        } elseif ($password !== $re_password) {
+            $error = "Passwords do not match.";
+            // Clear only the passwords
+            $password = '';
+            $re_password = '';
+        } else {
             $stmt = $conn->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
             $stmt->bind_param("s", $email);
             $stmt->execute();
@@ -29,17 +40,11 @@
                 $stmt->bind_param("sss", $name, $email, $password);
 
                 if ($stmt->execute()) {
-                // Get the inserted user ID
-                $user_id = $stmt->insert_id;
-
-                // Set session values
-                $_SESSION['user_id'] = $user_id;
-                $_SESSION['name'] = $name;
-
-                // Redirect to dashboard
-                header("Location: dashboard.php");
-                exit();
-            } else {
+                    $_SESSION['user_id'] = $stmt->insert_id;
+                    $_SESSION['name'] = $name;
+                    header("Location: dashboard.php");
+                    exit();
+                } else {
                     $error = "Registration failed: " . $stmt->error;
                 }
             }
@@ -66,34 +71,39 @@
             <form method="POST" action="register.php" id="registerForm" class="form">
                 <h1>Register</h1>
 
+
                 <?php
                     if (!empty($error)) echo "<p class='error'>$error</p>";
                     if (!empty($success)) echo "<p style='color:green;'>$success</p>";
                 ?>
 
+
                 <div class="inputBx">
                     <span>Full Name:</span>
                     <ion-icon name="person-outline"></ion-icon>
-                    <input type="text" name="name" placeholder="Enter your name" required>
+                    <input type="text" name="name" placeholder="Enter your name" value="<?php echo htmlspecialchars($name); ?>" required>
                 </div>
+
 
                 <div class="inputBx">
                     <span>Email:</span>
                     <ion-icon name="mail-outline"></ion-icon>
-                    <input type="email" name="email" placeholder="Enter your email" required>
+                    <input type="email" name="email" placeholder="Enter your email" value="<?php echo htmlspecialchars($email); ?>" required>
                 </div>
+
 
                 <div class="inputBx">
                     <span>Password:</span>
                     <ion-icon name="lock-closed-outline"></ion-icon>
                     <input type="password" name="password" placeholder="Create a password" id="myInput" required>
-  
                 </div>
 
+
                 <div class="inputBx">
-                    <span>Re-Enter Passwrod: </span>
+                    <span>Re-Enter Password:</span>
                     <ion-icon name="lock-closed-outline"></ion-icon>
-                    <input type="password" name="password" placeholder="Re-enter your password" id="myInput2" required>
+                    <input type="password" name="re_password" placeholder="Re-enter your password" id="myInput2" required>
+
 
                     <div class="showPass">
                         <br> <input type="checkbox" onclick="showPass()" id="showPassword">
@@ -101,9 +111,11 @@
                     </div>
                 </div>
 
+
                 <div class="inputBx">
                     <input type="submit" value="Register">
                 </div>
+
 
                 <p class="registerText">Already have an account? <a href="login.php">Login here</a>.</p>
             </form>
@@ -111,4 +123,3 @@
     </div>
 </body>
 </html>
-

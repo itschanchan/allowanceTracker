@@ -7,8 +7,6 @@
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $email = $_POST['email'];
         $password = $_POST['password'];
-
-        // Check from database
         $query = "SELECT id, password FROM users WHERE email = '$email' LIMIT 1";
         $result = mysqli_query($conn, $query);
 
@@ -17,6 +15,7 @@
 
             if ($password === $user['password']) {
                 $_SESSION['user_id'] = $user['id'];
+                $_SESSION['name'] = $user['name']; 
                 header("Location: dashboard.php");
                 exit();
             } else {

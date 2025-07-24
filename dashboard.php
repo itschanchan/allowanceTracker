@@ -2,7 +2,6 @@
     session_start();
     include_once("connect.php");
 
-    // Check if user is logged in
     if (!isset($_SESSION['user_id'])) {
         header("Location: login.php");
         exit();
@@ -35,7 +34,7 @@
         }
     }
 
-    // ✅ Handle Set Budget Form
+    // Handle Set Budget Form
     if (isset($_POST['set_budget'])) {
         $budget_input = isset($_POST['budget']) ? floatval($_POST['budget']) : 0;
 
@@ -66,9 +65,13 @@
         if ($date && $description && is_numeric($amount) && $amount >= 0) {
             $query = "INSERT INTO transactions (user_id, date, description, amount) VALUES ('$user_id', '$date', '$description', '$amount')";
             if (mysqli_query($conn, $query)) {
-                $success = "Transaction added successfully!";
+                $_SESSION['success'] = "Transaction added successfully!";
+                header("Location: dashboard.php");
+                exit();
             } else {
-                $error = "Failed to add transaction: " . mysqli_error($conn);
+                $_SESSION['error'] = "Failed to add transaction.";
+                header("Location: dashboard.php");
+                exit();
             }
         } else {
             $error = "All fields are required and amount must be valid.";
@@ -87,13 +90,23 @@
 
     $remaining = $allowance - $total_spent;
 
-    // 🔁 Budget fetch
+    // Budget fetch
     $result = mysqli_query($conn, "SELECT amount FROM budget WHERE user_id = $user_id");
     $row = mysqli_fetch_assoc($result);
     $budget = $row['amount'] ?? 0;
 
-    // ✅ Show warning if remaining is below budget
+    // Show warning if remaining is below budget
     $over_budget = ($remaining < $budget) && ($budget > 0);
+
+    // Handle Clean Everything
+    if (isset($_POST['clean_everything'])) {
+        mysqli_query($conn, "DELETE FROM transactions WHERE user_id = $user_id");
+        mysqli_query($conn, "DELETE FROM allowance WHERE user_id = $user_id");
+        mysqli_query($conn, "DELETE FROM budget WHERE user_id = $user_id");
+
+        $success = "All data has been cleared.";
+    }
+    
 ?>
 
 <!DOCTYPE html>
@@ -105,6 +118,7 @@
     <link rel="stylesheet" href="design_dashboard.css">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="javascript.js"></script>
 </head>
 <body>
@@ -119,122 +133,140 @@
             </nav>
 
             <div class="container">
-                <div class="sideBySideWrapper">
-                    
-                    <!-- LEFT: Dashboard + Budget -->
-                    <div class="leftWrapper">
-                        <!-- Dashboard Box -->
-                        <div class="box dashboardBox">
-                            <h1>Dashboard</h1> <br>
-                            <div class="stats">
-                                <p><strong>Fixed Allowance:</strong> ₱<?php echo number_format($allowance, 2); ?></p>
-                                <p><strong>Total Spent:</strong> ₱<?php echo number_format($total_spent, 2); ?></p>
-                                <p><strong>Remaining Balance:</strong> ₱<?php echo number_format($remaining, 2); ?></p>
-                                
-                                <!-- ✅ Budget Limit -->
-                                <p><strong>Budget Limit:</strong> ₱<?php echo number_format($budget, 2); ?></p>
+                <!-- Grid Area for Draggable Boxes -->
+                <div class="gridDraggableArea" id="gridDraggable">
 
-                                <!-- ✅ Show warning if remaining balance is below budget -->
-                                <?php if ($remaining < $budget && $budget > 0): ?>
-                                    <p style="color: orange; font-weight: bold;">⚠ Warning: Your remaining balance is below your budget limit!</p>
-                                <?php endif; ?>
-                            </div>
+                    <!-- Dashboard Box -->
+                    <div class="box dashboardBox">
+                        <div class="drag-handle">
+                            <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+                        </div>
+                        <h1>Dashboard</h1> <br>
+                        <div class="stats">
+                            <p><strong>Fixed Allowance:</strong> ₱<?php echo number_format($allowance, 2); ?></p>
+                            <p><strong>Total Spent:</strong> ₱<?php echo number_format($total_spent, 2); ?></p>
+                            <p><strong>Remaining Balance:</strong> ₱<?php echo number_format($remaining, 2); ?></p>
+                            <p><strong>Budget Limit:</strong> ₱<?php echo number_format($budget, 2); ?></p>
 
-                            <h3 style="margin-top: 30px;">Transaction History</h3>
-                            <table>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                    <th>Amount (₱)</th>
-                                    <th>Action</th>
-                                </tr>
-                                <?php
-                                $transactions = mysqli_query($conn, "SELECT id, date, description, amount FROM transactions WHERE user_id = $user_id ORDER BY date DESC");
-                                if (mysqli_num_rows($transactions) > 0) {
-                                    while ($row = mysqli_fetch_assoc($transactions)) {
-                                        $id = $row['id'];
-                                        $date = $row['date'];
-                                        $desc = $row['description'];
-                                        $amount = number_format($row['amount'], 2);
+                            <?php if ($remaining < $budget && $budget > 0): ?>
+                                <p style="color: orange; font-weight: bold;">⚠ Warning: Your remaining balance is below your budget limit!</p>
+                            <?php endif; ?>
+                        </div>
 
-                                        $editBtn = "<button class='action-btn edit' onclick='editRow({$id})'>Edit</button>";
-                                        $saveBtn = "<button class='action-btn save' onclick='saveRow({$id})' style='display:none;'>Save</button>";
-                                        $deleteBtn = "
-                                            <a href='delete_transaction.php?id={$id}' 
-                                            class='action-btn delete' 
-                                            onclick=\"return confirm('Are you sure you want to delete this transaction?');\">
-                                                Delete
-                                            </a>";
+                        <h3 style="margin-top: 30px;">Transaction History</h3>
+                        <table>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount (₱)</th>
+                                <th>Action</th>
+                            </tr>
+                            <?php
+                            $transactions = mysqli_query($conn, "SELECT id, date, description, amount FROM transactions WHERE user_id = $user_id ORDER BY date DESC");
+                            if (mysqli_num_rows($transactions) > 0) {
+                                while ($row = mysqli_fetch_assoc($transactions)) {
+                                    $id = $row['id'];
+                                    $date = $row['date'];
+                                    $desc = $row['description'];
+                                    $amount = number_format($row['amount'], 2);
 
-                                        echo "
-                                        <tr id='row-{$id}'>
-                                            <td class='date'>{$date}</td>
-                                            <td class='desc'>{$desc}</td>
-                                            <td class='amount'>{$amount}</td>
-                                            <td class='action'>
-                                                {$editBtn}
-                                                {$saveBtn}
-                                                {$deleteBtn}
-                                            </td>
-                                        </tr>";
-                                    }
-                                } else {
-                                    echo "<tr><td colspan='4'>No transactions found.</td></tr>";
+                                    $editBtn = "<button class='action-btn edit' onclick='editRow({$id})'>Edit</button>";
+                                    $saveBtn = "<button class='action-btn save' onclick='saveRow({$id})' style='display:none;'>Save</button>";
+                                    $deleteBtn = "
+                                        <a href='delete_transaction.php?id={$id}' 
+                                        class='action-btn delete' 
+                                        onclick=\"return confirm('Are you sure you want to delete this transaction?');\">
+                                            Delete
+                                        </a>";
+
+                                    echo "
+                                    <tr id='row-{$id}'>
+                                        <td class='date'>{$date}</td>
+                                        <td class='desc'>{$desc}</td>
+                                        <td class='amount'>{$amount}</td>
+                                        <td class='action'>
+                                            {$editBtn}
+                                            {$saveBtn}
+                                            {$deleteBtn}
+                                        </td>
+                                    </tr>";
                                 }
-                                ?>
-                            </table>
-                        </div>
-
-
-                        <!-- Budget Box -->
-                        <div class="box budgetBox">
-                            <h2>Budget / Spending Limit</h2>
-                            <div class="stats">
-                                <p><strong>Budget Limit:</strong> ₱<?php echo number_format($budget, 2); ?></p>
-                                <p><strong>Total Spent:</strong> ₱<?php echo number_format($total_spent, 2); ?></p>
-                                <p>
-                                    <strong>Status:</strong> 
-                                    <?php if ($budget == 0): ?>
-                                        No budget set.
-                                    <?php elseif ($over_budget): ?>
-                                        <span style="color: red;">Over Budget</span>
-                                    <?php else: ?>
-                                        <span style="color: green;">Within Budget</span>
-                                    <?php endif; ?>
-                                </p>
-                            </div>
-
-                            <form method="POST" class="form" style="margin-top: 20px;">
-                                <div class="inputBx">
-                                    <label for="budget">Set Budget Limit (₱):</label>
-                                    <input 
-                                        type="range" 
-                                        name="budget" 
-                                        id="budgetSlider" 
-                                        min="0" 
-                                        max="<?php echo $allowance; ?>" 
-                                        step="1" 
-                                        value="<?php echo $budget; ?>" 
-                                        oninput="document.getElementById('budgetDisplay').innerText = this.value">
-
-                                    <p>Selected Budget: ₱<span id="budgetDisplay"><?php echo $budget; ?></span></p>
-                                    <input type="hidden" name="set_budget" value="1">
-                                </div>
-                                <div class="inputBx">
-                                    <input type="submit" value="Set Budget">
-                                </div>
-                            </form>
-                        </div>
-
+                            } else {
+                                echo "<tr><td colspan='4'>No transactions found.</td></tr>";
+                            }
+                            ?>
+                        </table>
                     </div>
 
-                    <!-- RIGHT: Tabs -->
+                    <!-- Pie Chart Box -->
+                    <div class="box chartBox">
+                        <div class="drag-handle">
+                            <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+                        </div>
+                        <h2>Spending Distribution</h2>
+                        <canvas id="spendingPieChart"></canvas>
+                    </div>
+
+                    <!-- Budget Box -->
+                    <div class="box budgetBox">
+                        <div class="drag-handle">
+                            <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+                        </div>
+                        <h2>Budget / Spending Limit</h2>
+                        <div class="stats">
+                            <p><strong>Budget Limit:</strong> ₱<?php echo number_format($budget, 2); ?></p>
+                            <p><strong>Total Spent:</strong> ₱<?php echo number_format($total_spent, 2); ?></p>
+                            <p>
+                                <strong>Status:</strong>
+                                <?php if ($budget == 0): ?>
+                                    No budget set.
+                                <?php elseif ($over_budget): ?>
+                                    <span style="color: red;">Over Budget</span>
+                                <?php else: ?>
+                                    <span style="color: green;">Within Budget</span>
+                                <?php endif; ?>
+                            </p>
+                        </div>
+                        <form method="POST" class="form" style="margin-top: 20px;">
+                            <div class="inputBx">
+                                <label for="budgetSlider">Set Budget Limit (₱):</label>
+                                <input
+                                    type="range"
+                                    id="budgetSlider"
+                                    name="budget_slider"
+                                    min="0"
+                                    max="<?php echo $allowance; ?>"
+                                    step="5"
+                                    value="<?php echo $budget; ?>">
+                                <p>Selected Budget:</p>
+                                <div class="pesoInputWrapper">
+                                    <span class="peso-symbol">₱</span>
+                                    <input
+                                        type="number"
+                                        id="budgetInput"
+                                        name="budget"
+                                        min="0"
+                                        max="<?php echo $allowance; ?>"
+                                        step="5"
+                                        value="<?php echo $budget; ?>">
+                                </div>
+                                <input type="hidden" name="set_budget" value="1">
+                            </div>
+                            <div class="inputBx">
+                                <input type="submit" value="Set Budget">
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tabs Section -->
                     <div class="tabWrapper box">
-                        <!-- Tabs -->
+                        <div class="drag-handle">
+                            <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+                        </div>
                         <div class="tabsContainer">
-                            <ul aria-labelledby="tabs-title">
-                                <li><a id="tab-1" href="#setAllowanceContent" class="active">Set Allowance</a></li>
-                                <li><a id="tab-2" href="#addTransactionContent">Add Transaction</a></li>
+                            <ul>
+                                <li><a href="#setAllowanceContent" class="active">Set Allowance</a></li>
+                                <li><a href="#addTransactionContent">Add Transaction</a></li>
                             </ul>
                         </div>
 
@@ -280,16 +312,88 @@
                         </div>
 
                         <?php
-                        if (!empty($error)) {
-                            echo "<p class='error'>$error</p>";
-                        } elseif (!empty($success)) {
-                            echo "<p class='success'>$success</p>";
-                        }
+                            if (!empty($error)) {
+                                echo "<p class='error'>$error</p>";
+                            } elseif (!empty($success)) {
+                                echo "<p class='success'>$success</p>";
+                            }
                         ?>
                     </div>
                 </div>
+                <!-- Clean Everything Box -->
+                    <div class="box" style="text-align: center; margin-top: 20px;">
+                        <form method="POST" onsubmit="return confirm('Are you sure you want to delete all your data? This action cannot be undone.');">
+                            <input type="hidden" name="clean_everything" value="1">
+                            <input type="submit" value="🗑️ Clean Everything" class="clean-everything-btn">
+                        </form>
+                    </div>
             </div>
         </div>
     </div>
+
+<!-- JS for Budget Slider -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const slider = document.getElementById("budgetSlider");
+        const input = document.getElementById("budgetInput");
+
+        if (!slider || !input) return;
+
+        const syncFromSlider = () => {
+            input.value = slider.value;
+        };
+
+        const syncFromInput = () => {
+            let value = parseFloat(input.value);
+            const min = parseFloat(slider.min);
+            const max = parseFloat(slider.max);
+
+            if (!isNaN(value)) {
+                value = Math.min(Math.max(value, min), max);
+                slider.value = value;
+            }
+        };
+
+        slider.addEventListener("input", syncFromSlider);
+        input.addEventListener("input", syncFromInput);
+
+        syncFromSlider();
+    });
+</script>
+
+<!-- Script for Tabs -->
+<script>
+    // Switch Tab
+    document.addEventListener("DOMContentLoaded", function () {
+        const tabLinks = document.querySelectorAll(".tabsContainer a");
+        const tabContents = document.querySelectorAll(".tab-content");
+
+        tabLinks.forEach(link => {
+            link.addEventListener("click", function (e) {
+                e.preventDefault();
+
+                tabLinks.forEach(l => l.classList.remove("active"));
+                tabContents.forEach(c => c.classList.remove("active"));
+
+                this.classList.add("active");
+
+                const target = document.querySelector(this.getAttribute("href"));
+                if (target) target.classList.add("active");
+            });
+        });
+    });
+</script>
+
+<!-- Drag & Drop -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        new Sortable(document.getElementById("gridDraggable"), {
+            animation: 150,
+            ghostClass: "dragGhost",
+            handle: ".drag-handle",
+            draggable: ".box"
+        });
+    });
+</script>
 </body>
 </html>

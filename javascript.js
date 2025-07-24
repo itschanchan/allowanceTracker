@@ -19,54 +19,16 @@ function showPass() {
 }
 
 // Paswword Validation Function
-function checkPass() {
-  document.getElementById("registerForm").addEventListener("submit", function(event) {
-    const pass = document.getElementById("myInput").value;
-    const rePass = document.getElementById("myInput2").value;
+document.getElementById("registerForm").addEventListener("submit", function(e) {
+    const pass1 = document.getElementById("myInput").value;
+    const pass2 = document.getElementById("myInput2").value;
 
-    if (pass !== rePass) {
-      event.preventDefault();
-      alert("Passwords do not match. Please try again.");
+
+    if (pass1 !== pass2) {
+        e.preventDefault();
+        alert("Passwords do not match.");
     }
-  });
-}
-
-// Pop-up Form For Setting Allowance
-function openModal() {
-    document.getElementById("allowanceModal").style.display = "block";
-}
-
-function closeModal() {
-    document.getElementById("allowanceModal").style.display = "none";
-}
-
-window.onclick = function(event) {
-    const modal = document.getElementById("allowanceModal");
-    if (event.target == modal) {
-        closeModal();
-    }
-};
-
-// Switch Tab
-document.addEventListener("DOMContentLoaded", function () {
-    const tabLinks = document.querySelectorAll(".tabsContainer a");
-    const tabContents = document.querySelectorAll(".tab-content");
-
-    tabLinks.forEach(link => {
-        link.addEventListener("click", function (e) {
-            e.preventDefault();
-
-            // Remove active classes
-            tabLinks.forEach(l => l.classList.remove("active"));
-            tabContents.forEach(c => c.classList.remove("active"));
-
-            // Add active to clicked tab and corresponding content
-            this.classList.add("active");
-            const targetId = this.getAttribute("href");
-            document.querySelector(targetId).classList.add("active");
-        });
-    });
-});
+})
 
 // Actions Column
 function editRow(id) {
@@ -80,6 +42,7 @@ function editRow(id) {
     // Replace text with input fields
     date.innerHTML = `<input type="date" value="${date.innerText}" />`;
     desc.innerHTML = `<input type="text" value="${desc.innerText}" />`;
+    // regex implementation
     amount.innerHTML = `<input type="number" step="0.01" value="${parseFloat(amount.innerText.replace(/₱|,/g, ''))}" />`;
 
     editBtn.style.display = "none";
@@ -94,7 +57,6 @@ function saveRow(id) {
     const editBtn = row.querySelector('.edit');
     const saveBtn = row.querySelector('.save');
 
-    // Send data to update.php using AJAX
     fetch('update.php', {
         method: 'POST',
         headers: {
@@ -105,7 +67,6 @@ function saveRow(id) {
     .then(response => response.text())
     .then(data => {
         if (data.trim() === "success") {
-            // Reload the page to reflect updated totals
             window.location.reload();
         } else {
             alert("Update failed: " + data);
@@ -118,4 +79,3 @@ function saveRow(id) {
     editBtn.style.display = "inline-block";
     saveBtn.style.display = "none";
 }
-
