@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 22, 2025 at 08:15 AM
+-- Generation Time: Jul 24, 2025 at 09:52 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `student_allowance_tracker`
+-- Database: `student_allowance_db`
 --
 
 -- --------------------------------------------------------
@@ -39,7 +39,19 @@ CREATE TABLE `allowance` (
 --
 
 INSERT INTO `allowance` (`id`, `user_id`, `amount`, `period`) VALUES
-(1, 2, 50000.00, 'monthly');
+(1, 2, 50000.00, 'monthly'),
+(4, 5, 10000.00, 'monthly');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `budget`
+--
+
+CREATE TABLE `budget` (
+  `user_id` int(11) NOT NULL,
+  `amount` decimal(10,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -53,6 +65,7 @@ CREATE TABLE `transactions` (
   `date` date NOT NULL,
   `description` varchar(255) NOT NULL,
   `amount` decimal(10,2) NOT NULL,
+  `category` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -60,8 +73,11 @@ CREATE TABLE `transactions` (
 -- Dumping data for table `transactions`
 --
 
-INSERT INTO `transactions` (`id`, `user_id`, `date`, `description`, `amount`, `created_at`) VALUES
-(1, 2, '2020-12-22', 'Bills', 32344.00, '2025-07-22 05:17:30');
+INSERT INTO `transactions` (`id`, `user_id`, `date`, `description`, `amount`, `category`, `created_at`) VALUES
+(1, 2, '2020-12-22', 'Bills', 32344.00, '', '2025-07-22 05:17:30'),
+(51, 5, '2025-07-24', 'Chickenjoy', 100.00, 'Entertainment & Recreation', '2025-07-24 07:31:13'),
+(52, 5, '2025-07-25', 'Shampoo', 1000.00, 'Entertainment & Recreation', '2025-07-24 07:31:24'),
+(53, 5, '2025-07-24', 'Buying pants', 50.00, 'Miscellaneous / Other', '2025-07-24 07:32:00');
 
 -- --------------------------------------------------------
 
@@ -82,7 +98,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `created_at`) VALUES
-(2, 'Lucas Brave', 'Miguel@gmail.com', 'example', '2025-07-22 05:01:17');
+(2, 'Lucas Brave', 'Miguel@gmail.com', 'example', '2025-07-22 05:01:17'),
+(5, 'Sean', 'andrei.lacson@ciit.edu.ph', '12345678', '2025-07-23 05:54:25');
 
 --
 -- Indexes for dumped tables
@@ -94,6 +111,12 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `created_at`) VALUES
 ALTER TABLE `allowance`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `budget`
+--
+ALTER TABLE `budget`
+  ADD PRIMARY KEY (`user_id`);
 
 --
 -- Indexes for table `transactions`
@@ -117,19 +140,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `allowance`
 --
 ALTER TABLE `allowance`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables

@@ -109,6 +109,21 @@
     
 ?>
 
+<?php
+    $categoryData = [];
+    $query = "SELECT category, SUM(amount) as total FROM transactions WHERE user_id = $user_id GROUP BY category ORDER BY total DESC";
+    $result = mysqli_query($conn, $query);
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $cat = (!empty($row['category'])) ? $row['category'] : 'Miscellaneous / Other';
+        $total = $row['total'];
+        $categoryData[$cat] = $total;
+    }
+
+    $categoryLabels = json_encode(array_keys($categoryData));
+    $categoryValues = json_encode(array_values($categoryData));
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -119,6 +134,7 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="javascript.js"></script>
 </head>
 <body>
@@ -154,48 +170,67 @@
                         </div>
 
                         <h3 style="margin-top: 30px;">Transaction History</h3>
-                        <table>
-                            <tr>
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th>Amount (₱)</th>
-                                <th>Action</th>
-                            </tr>
-                            <?php
-                            $transactions = mysqli_query($conn, "SELECT id, date, description, amount FROM transactions WHERE user_id = $user_id ORDER BY date DESC");
-                            if (mysqli_num_rows($transactions) > 0) {
-                                while ($row = mysqli_fetch_assoc($transactions)) {
-                                    $id = $row['id'];
-                                    $date = $row['date'];
-                                    $desc = $row['description'];
-                                    $amount = number_format($row['amount'], 2);
+                        <div class="table-wrapper">
+                            <table>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount (₱)</th>
+                                    <th>Category</th>
+                                    <th>Action</th>
+                                </tr>
+                                <?php
+                                $transactions = mysqli_query($conn, "SELECT id, date, description, amount, category FROM transactions WHERE user_id = $user_id ORDER BY date DESC");
 
-                                    $editBtn = "<button class='action-btn edit' onclick='editRow({$id})'>Edit</button>";
-                                    $saveBtn = "<button class='action-btn save' onclick='saveRow({$id})' style='display:none;'>Save</button>";
-                                    $deleteBtn = "
-                                        <a href='delete_transaction.php?id={$id}' 
-                                        class='action-btn delete' 
-                                        onclick=\"return confirm('Are you sure you want to delete this transaction?');\">
-                                            Delete
-                                        </a>";
+                                if (mysqli_num_rows($transactions) > 0) {
+                                    $categoryOptions = [
+                                        "Food & Dining",
+                                        "Transportation",
+                                        "Education & School Supplies",
+                                        "Personal Care & Wellness",
+                                        "Entertainment & Recreation",
+                                        "Medical & Health",
+                                        "Utilities & Bills",
+                                        "Miscellaneous / Other"
+                                    ];
 
-                                    echo "
-                                    <tr id='row-{$id}'>
-                                        <td class='date'>{$date}</td>
-                                        <td class='desc'>{$desc}</td>
-                                        <td class='amount'>{$amount}</td>
-                                        <td class='action'>
-                                            {$editBtn}
-                                            {$saveBtn}
-                                            {$deleteBtn}
-                                        </td>
-                                    </tr>";
+                                    while ($row = mysqli_fetch_assoc($transactions)) {
+                                        $id = $row['id'];
+                                        $date = $row['date'];
+                                        $desc = $row['description'];
+                                        $amount = number_format($row['amount'], 2);
+                                        $category = $row['category'] ?? 'Miscellaneous / Other';
+
+                                        $editBtn = "<button class='action-btn edit' onclick='editRow({$id})'>Edit</button>";
+                                        $saveBtn = "<button class='action-btn save' onclick='saveRow({$id})' style='display:none;'>Save</button>";
+                                        $deleteBtn = "<a href='delete_transaction.php?id={$id}' class='action-btn delete' onclick=\"return confirm('Are you sure you want to delete this transaction?');\">Delete</a>";
+
+                                        echo "<tr id='row-{$id}'>
+                                            <td class='date'>{$date}</td>
+                                            <td class='desc'>{$desc}</td>
+                                            <td class='amount'>{$amount}</td>
+                                            <td class='category'>
+                                                <select class='category-select' id='category-{$id}'>";
+                                                    foreach ($categoryOptions as $option) {
+                                                        $selected = ($category === $option) ? "selected" : "";
+                                                        echo "<option value=\"{$option}\" {$selected}>{$option}</option>";
+                                                    }
+                                        echo "  </select>
+                                            </td>
+                                            <td class='action'>
+                                                {$editBtn}
+                                                {$saveBtn}
+                                                {$deleteBtn}
+                                            </td>
+                                        </tr>";
+                                    }
+                                } else {
+                                    echo "<tr><td colspan='5'>No transactions found.</td></tr>";
                                 }
-                            } else {
-                                echo "<tr><td colspan='4'>No transactions found.</td></tr>";
-                            }
-                            ?>
-                        </table>
+                                ?>
+                            </table>
+                        </div>
+                        
                     </div>
 
                     <!-- Pie Chart Box -->
@@ -204,7 +239,9 @@
                             <ion-icon name="ellipsis-vertical-outline"></ion-icon>
                         </div>
                         <h2>Spending Distribution</h2>
-                        <canvas id="spendingPieChart"></canvas>
+                        <canvas id="spendingPieChart">
+
+                        </canvas>
                     </div>
 
                     <!-- Budget Box -->
@@ -324,76 +361,16 @@
                     <div class="box" style="text-align: center; margin-top: 20px;">
                         <form method="POST" onsubmit="return confirm('Are you sure you want to delete all your data? This action cannot be undone.');">
                             <input type="hidden" name="clean_everything" value="1">
-                            <input type="submit" value="🗑️ Clean Everything" class="clean-everything-btn">
+                            <input type="submit" value="🧹 Clean Everything! ✨" class="clean-everything-btn">
                         </form>
                     </div>
             </div>
         </div>
     </div>
-
-<!-- JS for Budget Slider -->
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const slider = document.getElementById("budgetSlider");
-        const input = document.getElementById("budgetInput");
-
-        if (!slider || !input) return;
-
-        const syncFromSlider = () => {
-            input.value = slider.value;
-        };
-
-        const syncFromInput = () => {
-            let value = parseFloat(input.value);
-            const min = parseFloat(slider.min);
-            const max = parseFloat(slider.max);
-
-            if (!isNaN(value)) {
-                value = Math.min(Math.max(value, min), max);
-                slider.value = value;
-            }
-        };
-
-        slider.addEventListener("input", syncFromSlider);
-        input.addEventListener("input", syncFromInput);
-
-        syncFromSlider();
-    });
+window.categoryLabels = <?php echo $categoryLabels; ?>;
+window.categoryValues = <?php echo $categoryValues; ?>;
 </script>
 
-<!-- Script for Tabs -->
-<script>
-    // Switch Tab
-    document.addEventListener("DOMContentLoaded", function () {
-        const tabLinks = document.querySelectorAll(".tabsContainer a");
-        const tabContents = document.querySelectorAll(".tab-content");
-
-        tabLinks.forEach(link => {
-            link.addEventListener("click", function (e) {
-                e.preventDefault();
-
-                tabLinks.forEach(l => l.classList.remove("active"));
-                tabContents.forEach(c => c.classList.remove("active"));
-
-                this.classList.add("active");
-
-                const target = document.querySelector(this.getAttribute("href"));
-                if (target) target.classList.add("active");
-            });
-        });
-    });
-</script>
-
-<!-- Drag & Drop -->
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        new Sortable(document.getElementById("gridDraggable"), {
-            animation: 150,
-            ghostClass: "dragGhost",
-            handle: ".drag-handle",
-            draggable: ".box"
-        });
-    });
-</script>
 </body>
 </html>
