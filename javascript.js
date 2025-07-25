@@ -1,12 +1,25 @@
+// Document Object Model (DOM) Content Loaded Event -> encased inside DOM
 document.addEventListener("DOMContentLoaded", function () {
     // Show Password Function
     window.showPass = function () {
         const input1 = document.getElementById("myInput");
         const input2 = document.getElementById("myInput2");
 
-        [input1, input2].forEach(input => {
-            if (input) input.type = input.type === "password" ? "text" : "password";
-        });
+        if (input1) {
+            if (input1.type === "password") {
+                input1.type = "text";
+            } else {
+                input1.type = "password";
+            }
+        }
+
+        if (input2) {
+            if (input2.type === "password") {
+                input2.type = "text";
+            } else {
+                input2.type = "password";
+            }
+        }
     };
 
     // Password Match Validation
@@ -37,6 +50,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         date.innerHTML = `<input type="date" value="${formattedDate}" />`;
         desc.innerHTML = `<input type="text" value="${desc.innerText.trim()}" />`;
+        
+        // Regex implementation to handle currency formatting.
         amount.innerHTML = `<input type="number" step="0.01" value="${parseFloat(amount.innerText.replace(/₱|,/g, ''))}" />`;
 
         editBtn.style.display = "none";

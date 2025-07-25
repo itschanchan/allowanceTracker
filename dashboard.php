@@ -81,7 +81,7 @@
     // Total spent
     $result = mysqli_query($conn, "SELECT SUM(amount) AS total FROM transactions WHERE user_id = $user_id");
     $row = mysqli_fetch_assoc($result);
-    $total_spent = $row['total'] ?? 0;
+    $total_spent = $row['total'];
 
     // Allowance
     $result = mysqli_query($conn, "SELECT amount FROM allowance WHERE user_id = $user_id");
@@ -139,7 +139,9 @@
 </head>
 <body>
     <div class="pageWrapper">
+        <!-- Title Section -->
         <div class="mainContainer">
+            <!-- Navigation Bar -->
             <nav class="navbar">
                 <div class="logo">Student Allowance Tracker</div>
                 <div class="nav-right">
@@ -357,7 +359,7 @@
                         ?>
                     </div>
                 </div>
-                <!-- Clean Everything Box -->
+                <!-- Clean Everything Button -->
                     <div class="box" style="text-align: center; margin-top: 20px;">
                         <form method="POST" onsubmit="return confirm('Are you sure you want to delete all your data? This action cannot be undone.');">
                             <input type="hidden" name="clean_everything" value="1">
@@ -367,6 +369,8 @@
             </div>
         </div>
     </div>
+
+<!-- Imported category labels from javascript.js file -->
 <script>
 window.categoryLabels = <?php echo $categoryLabels; ?>;
 window.categoryValues = <?php echo $categoryValues; ?>;
