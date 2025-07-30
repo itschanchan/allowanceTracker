@@ -197,35 +197,39 @@
                                     ];
 
                                     while ($row = mysqli_fetch_assoc($transactions)) {
-                                        $id = $row['id'];
-                                        $date = $row['date'];
-                                        $desc = $row['description'];
-                                        $amount = number_format($row['amount'], 2);
-                                        $category = $row['category'] ?? 'Miscellaneous / Other';
+                                    $id = $row['id'];
+                                    $date = $row['date'];
+                                    $desc = $row['description'];
+                                    $amount = number_format($row['amount'], 2);
+                                    $category = $row['category'] ?? '';
 
-                                        $editBtn = "<button class='action-btn edit' onclick='editRow({$id})'>Edit</button>";
-                                        $saveBtn = "<button class='action-btn save' onclick='saveRow({$id})' style='display:none;'>Save</button>";
-                                        $deleteBtn = "<a href='delete_transaction.php?id={$id}' class='action-btn delete' onclick=\"return confirm('Are you sure you want to delete this transaction?');\">Delete</a>";
+                                    $editBtn = '<button class="action-btn edit" onclick="editRow(' . $id . ')">Edit</button>';
+                                    $saveBtn = '<button class="action-btn save" onclick="saveRow(' . $id . ')" style="display:none;">Save</button>';
+                                    $deleteBtn = '<a href="delete_transaction.php?id=' . $id . '" class="action-btn delete" onclick="return confirm(\'Are you sure you want to delete this transaction?\');">Delete</a>';
 
-                                        echo "<tr id='row-{$id}'>
-                                            <td class='date'>{$date}</td>
-                                            <td class='desc'>{$desc}</td>
-                                            <td class='amount'>{$amount}</td>
-                                            <td class='category'>
-                                                <select class='category-select' id='category-{$id}'>";
-                                                    foreach ($categoryOptions as $option) {
-                                                        $selected = ($category === $option) ? "selected" : "";
-                                                        echo "<option value=\"{$option}\" {$selected}>{$option}</option>";
-                                                    }
-                                        echo "  </select>
-                                            </td>
-                                            <td class='action'>
-                                                {$editBtn}
-                                                {$saveBtn}
-                                                {$deleteBtn}
-                                            </td>
-                                        </tr>";
+                                    echo '<tr id="row-' . $id . '">
+                                            <td class="date">' . $date . '</td>
+                                            <td class="desc">' . $desc . '</td>
+                                            <td class="amount">' . $amount . '</td>
+                                            <td class="category">
+                                                <select class="category-select" id="category-' . $id . '">
+                                                    <option value="" disabled ' . (empty($category) ? 'selected' : '') . '>Select Category</option>';
+
+                                    foreach ($categoryOptions as $option) {
+                                        $selected = ($category === $option) ? 'selected' : '';
+                                        echo '<option value="' . $option . '" ' . $selected . '>' . $option . '</option>';
                                     }
+
+                                    echo '</select>
+                                            </td>
+                                            <td class="action">
+                                                ' . $editBtn . '
+                                                ' . $saveBtn . '
+                                                ' . $deleteBtn . '
+                                            </td>
+                                        </tr>';
+                                }
+
                                 } else {
                                     echo "<tr><td colspan='5'>No transactions found.</td></tr>";
                                 }

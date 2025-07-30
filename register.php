@@ -22,6 +22,7 @@
             $error = "All fields are required.";
         } elseif ($password !== $re_password) {
             $error = "Passwords do not match.";
+            
             // Clear only the passwords
             $password = '';
             $re_password = '';
@@ -35,14 +36,50 @@
                 $error = "Email is already registered.";
             } else {
                 $stmt->close();
+                
+                // Password Hashing
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
                 $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-                $stmt->bind_param("sss", $name, $email, $password);
+                $stmt->bind_param("sss", $name, $email, $hashed_password);
 
                 if ($stmt->execute()) {
                     $_SESSION['user_id'] = $stmt->insert_id;
                     $_SESSION['name'] = $name;
-                    header("Location: dashboard.php");
+
+                    $success = "Registration successful! Redirecting to login...";
+                    header("Refresh: 2; URL=login.php");
+
+
+                    echo "<!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta http-equiv='refresh' content='2;url=login.php'>
+                        <title>Redirecting...</title>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                                background-color: #f0f0f0;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                height: 100vh;
+                                color: green;
+                            }
+                            .message {
+                                background: #e0ffe0;
+                                border: 1px solid #00cc00;
+                                padding: 20px;
+                                border-radius: 10px;
+                                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class='message'>$success</div>
+                    </body>
+                    </html>";
+
                     exit();
                 } else {
                     $error = "Registration failed: " . $stmt->error;
@@ -66,60 +103,62 @@
     <div class="title">
         <h1>STUDENT ALLOWANCE TRACKER</h1>
     </div>
-    <div class="mainContainer">
-        <div class="container">
-            <form method="POST" action="register.php" id="registerForm" class="form">
-                <h1>Register</h1>
+
+    <div class="pageWrapper">
+        <div class="mainContainer">
+            <div class="container">
+                <form method="POST" action="register.php" id="registerForm" class="form">
+                    <h1>Register</h1>
+                    <?php
+                        if (!empty($error)) echo "<p class='error'>$error</p>";
+                        if (!empty($success)) echo "<p style='color:green;'>$success</p>";
+                    ?>
 
 
-                <?php
-                    if (!empty($error)) echo "<p class='error'>$error</p>";
-                    if (!empty($success)) echo "<p style='color:green;'>$success</p>";
-                ?>
-
-
-                <div class="inputBx">
-                    <span>Full Name:</span>
-                    <ion-icon name="person-outline"></ion-icon>
-                    <input type="text" name="name" placeholder="Enter your name" value="<?php echo htmlspecialchars($name); ?>" required>
-                </div>
-
-
-                <div class="inputBx">
-                    <span>Email:</span>
-                    <ion-icon name="mail-outline"></ion-icon>
-                    <input type="email" name="email" placeholder="Enter your email" value="<?php echo htmlspecialchars($email); ?>" required>
-                </div>
-
-
-                <div class="inputBx">
-                    <span>Password:</span>
-                    <ion-icon name="lock-closed-outline"></ion-icon>
-                    <input type="password" name="password" placeholder="Create a password" id="myInput" required>
-                </div>
-
-
-                <div class="inputBx">
-                    <span>Re-Enter Password:</span>
-                    <ion-icon name="lock-closed-outline"></ion-icon>
-                    <input type="password" name="re_password" placeholder="Re-enter your password" id="myInput2" required>
-
-
-                    <div class="showPass">
-                        <br> <input type="checkbox" onclick="showPass()" id="showPassword">
-                        <label for="showPassword">Show Password</label>
+                    <div class="inputBx">
+                        <span>Full Name:</span>
+                        <ion-icon name="person-outline"></ion-icon>
+                        <input type="text" name="name" placeholder="Enter your name" value="<?php echo htmlspecialchars($name); ?>" required>
                     </div>
-                </div>
 
 
-                <div class="inputBx">
-                    <input type="submit" value="Register">
-                </div>
+                    <div class="inputBx">
+                        <span>Email:</span>
+                        <ion-icon name="mail-outline"></ion-icon>
+                        <input type="email" name="email" placeholder="Enter your email" value="<?php echo htmlspecialchars($email); ?>" required>
+                    </div>
 
 
-                <p class="registerText">Already have an account? <a href="login.php">Login here</a>.</p>
-            </form>
+                    <div class="inputBx">
+                        <span>Password:</span>
+                        <ion-icon name="lock-closed-outline"></ion-icon>
+                        <input type="password" name="password" placeholder="Create a password" id="myInput" required>
+                    </div>
+
+
+                    <div class="inputBx">
+                        <span>Re-Enter Password:</span>
+                        <ion-icon name="lock-closed-outline"></ion-icon>
+                        <input type="password" name="re_password" placeholder="Re-enter your password" id="myInput2" required>
+
+
+                        <div class="showPass">
+                            <br> <input type="checkbox" onclick="showPass()" id="showPassword">
+                            <label for="showPassword">Show Password</label>
+                        </div>
+                    </div>
+
+
+                    <div class="inputBx">
+                        <input type="submit" value="Register">
+                    </div>
+
+
+                    <p class="registerText">Already have an account? <a href="login.php" class="transition-link">Login here</a>.</p>
+                </form>
+            </div>
         </div>
     </div>
+    
 </body>
 </html>

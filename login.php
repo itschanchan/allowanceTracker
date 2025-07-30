@@ -7,13 +7,15 @@
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $email = $_POST['email'];
         $password = $_POST['password'];
-        $query = "SELECT id, password FROM users WHERE email = '$email' LIMIT 1";
+        $query = "SELECT id, name, password FROM users WHERE email = '$email' LIMIT 1";
         $result = mysqli_query($conn, $query);
 
         if ($result && mysqli_num_rows($result) === 1) {
             $user = mysqli_fetch_assoc($result);
+            $stored_hashed_password = $user['password']; 
 
-            if ($password === $user['password']) {
+            // Verify the password
+            if (password_verify($password, $stored_hashed_password)) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['name'] = $user['name']; 
                 header("Location: dashboard.php");
@@ -38,11 +40,11 @@
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 <body>
+    <div class="title">
+        <h1>STUDENT ALLOWANCE TRACKER</h1>
+    </div>
+
     <div class="pageWrapper">
-        <div class="title">
-            <h1>STUDENT ALLOWANCE TRACKER</h1>
-        </div>
-        
         <div class="mainContainer">
             <div class="container">
                 <form method="POST" class="form">
@@ -74,7 +76,7 @@
                         <p class="error"><?php echo $error; ?></p>
                     <?php endif; ?>
 
-                    <p class="registerText">Don't have an account? <a href="register.php">Register here</a>.</p>
+                    <p class="registerText">Don't have an account? <a href="register.php" class="transition-link">Register here</a>.</p>
                 </form>
             </div>
         </div>

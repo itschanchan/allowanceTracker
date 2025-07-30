@@ -1,5 +1,44 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
+/* ROOT COLORS */
+:root {
+    /* Primary Colors */
+    --primary-bg: #036666;
+    --primary-text: #ffffff;
+    --primary-hover: #14746F;
+
+    /* Accent Colors */
+    --accent-green: #67B99A;
+    --accent-green-hover: #56AB91;
+    --accent-blue: #469D89;
+    --accent-blue-hover: #358F80;
+    --accent-delete: #f44336;
+    --accent-delete-hover: #d32f2f;
+    --accent-tab-active: #248277;
+
+    /* Neutral Colors */
+    --gray-light: #eafaf2;
+    --gray-medium: #c8e8dc;
+    --gray-dark: #4a776c;
+    --background-light: #ffffff;
+    --background-gradient-top: #99E2B4;
+    --background-gradient-bottom: #88D4AB;
+
+    /* Budget Box */
+    --budget-bg: #eafaf2;
+
+    /* Input */
+    --input-border: #67B99A;
+    --input-bg: rgba(255, 255, 255, 0.8);
+
+    /* Peso Symbol */
+    --peso-color: #4a776c;
+
+    /* Clean Button */
+    --clean-btn: #78C6A3;
+}
+
+/* GLOBAL RESET */
 * {
     margin: 0;
     padding: 0;
@@ -12,9 +51,15 @@ html, body {
 }
 
 body {
-    background: linear-gradient(to bottom, #e0e0e0, #ffffff);
+    background: linear-gradient(to bottom, var(--background-gradient-top), var(--background-gradient-bottom));
 }
 
+.container {
+    transform: scale(1.0);
+    transform-origin: center;
+}
+
+/* PAGE LAYOUT */
 .pageWrapper {
     display: flex;
     flex-direction: column;
@@ -22,7 +67,7 @@ body {
     align-items: center;
     min-height: 100vh;
     width: 100%;
-    padding: 20px;
+    padding: 80px 20px 20px;
 }
 
 .mainContainer {
@@ -33,14 +78,24 @@ body {
 }
 
 .title {
+    position: absolute;
+    top: 120px;
+    width: 100%;
     text-align: center;
-    margin-bottom: 30px;
+    z-index: 10;
 }
 
+.title h1 {
+    font-size: xx-large;
+    color: var(--primary-bg);
+    letter-spacing: 1px;
+}
+
+/* CONTAINER */
 .container {
     position: relative;
     width: 320px;
-    background: #ffffff;
+    background: var(--background-light);
     backdrop-filter: blur(5px);
     border-radius: 20px;
     box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
@@ -54,18 +109,19 @@ body {
     right: 5px;
     bottom: 5px;
     left: 5px;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5));
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.6));
     border-radius: 20px;
     pointer-events: none;
     z-index: -1;
 }
 
-/* Form */
+/* FORM ELEMENTS */
 .form h1 {
     text-align: center;
     margin-bottom: 30px;
     font-size: 24px;
     letter-spacing: 1px;
+    color: var(--primary-bg);
 }
 
 .inputBx {
@@ -78,6 +134,7 @@ body {
     margin-bottom: 5px;
     font-weight: 500;
     font-size: 14px;
+    color: var(--gray-dark);
 }
 
 .inputBx input[type="text"],
@@ -88,15 +145,16 @@ body {
     width: 100%;
     padding: 10px 10px 10px 36px;
     font-size: 14px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--input-border);
     border-radius: 22px;
-    background: rgba(255, 255, 255, 0.6);
+    background: var(--input-bg);
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    color: var(--gray-dark);
 }
 
 .inputBx input[type="submit"] {
-    background: #333;
-    color: #fff;
+    background: var(--accent-green);
+    color: var(--primary-text);
     border: none;
     padding: 10px 30px;
     border-radius: 22px;
@@ -108,41 +166,53 @@ body {
     text-align: center;
 }
 
-
 .inputBx input[type="submit"]:hover {
-    background: #555;
+    background: var(--accent-green-hover);
 }
 
+/* SHOW PASSWORD */
 .showPass {
     margin-top: 8px;
     font-size: 13px;
+    color: var(--gray-dark);
 }
 
+/* REGISTER TEXT */
 .registerText {
     text-align: center;
     margin-top: 20px;
     font-size: 14px;
+    color: var(--gray-dark);
 }
 
-/* Error & Success Messages */
+/* MESSAGES */
 .error {
-    color: red;
+    color: var(--accent-delete);
     font-size: 14px;
     margin-top: 10px;
     text-align: center;
 }
 
 .success {
-    color: green;
+    color: var(--accent-green);
     font-size: 14px;
     margin-top: 10px;
     text-align: center;
 }
 
+/* ICONS */
 ion-icon {
     width: 24px;
     position: absolute;
     top: 33px;
     left: 9px;
     opacity: 0.6;
+    color: var(--gray-dark);
+}
+
+/* TRANSITIONS */
+
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease;
 }
