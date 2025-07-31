@@ -54,6 +54,8 @@ body {
     background: linear-gradient(to bottom, var(--background-gradient-top), var(--background-gradient-bottom));
 }
 
+
+/* GLOBAL SCALE */
 .container {
     transform: scale(1.0);
     transform-origin: center;
@@ -79,7 +81,7 @@ body {
 
 .title {
     position: absolute;
-    top: 120px;
+    top: 95px;
     width: 100%;
     text-align: center;
     z-index: 10;
